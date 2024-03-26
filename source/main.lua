@@ -41,13 +41,15 @@ local function updateGame()
 			selectedChoiceIndex = 1
 		end
 		local c = story:currentText()
-		while (c == "" or c== nil or c == " ") and story:canContinue() do
+		while (c == "" or c== nil or c == " ") and story:canContinue() do 
 			story:Continue()
 			choices = story:currentChoices()
 		end
 		
 	end
 	if playdate.buttonJustPressed(playdate.kButtonB) then
+		story:RemoveVariableObserver(nil, "itercount")
+		--[[
 		if story:currentFlowIsDefaultFlow() then
 			story:SwitchFlow("goont")
 			--story:ChoosePathString("murder_scene",false)
@@ -60,7 +62,7 @@ local function updateGame()
 			story:RemoveFlow("goont")
 		end
 		choices = story:currentChoices()
-		selectedChoiceIndex = 1
+		selectedChoiceIndex = 1]]
 	end
 
 	if playdate.buttonJustPressed(playdate.kButtonLeft) then
