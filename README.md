@@ -17,7 +17,7 @@ tinta only implements a _runtime_ for ink, you will need to use a third party co
 For performance reasons, tinta is not able to run the compiled json files directly. Instead, you will need to convert the json to lua using the provided `json_to_lua.sh` or `json_to_lua.ps1` command line tool.
 
 ```sh
-json_to_lua.sh my_story.json > my_story.lua
+json_to_lua.sh my_story.json my_story.lua
 ```
 
 Note that you might need to change the script execution policy if you want to run the ps1 script.
@@ -76,8 +76,8 @@ Saving would return a lua table representing the current state of the story.
 
 ```lua
 local saveData = story.state:save()
--- if on playdate
 
+-- if on playdate
 playdate.datastore.write(saveData)
 ```
 
@@ -118,7 +118,7 @@ Additionally, you could add the same observer to multiple variables:
 
 ```lua
 -- Anonymous function (if you don't remove them later)
-story:ObserveVariable({ "myVarDeclaredInInk1", "myVarDeclaredInInk2" }, function(varName, val) 
+story:ObserveVariables({ "myVarDeclaredInInk1", "myVarDeclaredInInk2" }, function(varName, val) 
         -- do stuff
 		print(varName.." changed to ".. tostring(val))
 end)
@@ -154,7 +154,7 @@ Fallbacks are enabled by default. Which means if an external function is called 
 
 The first `Continue()` call will validate all external function bindings. If you forgot to bind an external function while the function has no fallback (or fallback is disabled), it throws an error. 
 
-** You can't bind multiple functions to the same external function declaration. ** If you try to do so, it throws an error.
+**You can't bind multiple functions to the same external function declaration.** If you try to do so, it throws an error.
 
 You could remove bindings, but in that case you should have a fallback defined in ink or bind with another lua function immediately afterwards. Otherwise calling that function would result in error.
 
@@ -238,8 +238,22 @@ then in your lua code:
 ```lua
 import "../toyboxes/toyboxes"
 
-local storyDefinition = import("my_story")
-local story = Story(book)
+local my_story = import("my_story")
+local story = Story(my_story)
+```
+
+## Löve2D
+
+Download the full source code and copy the `source` folder inside your Löve2D game directory.  
+Rename this folder `tinta`.
+
+then in your lua code:
+
+```
+Story = require("tinta/love")
+
+local my_story = import("my_story")
+local story = Story(my_story)
 ```
 
 ## Notably missing features
