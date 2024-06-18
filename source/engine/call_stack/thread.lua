@@ -31,7 +31,11 @@ function CallStackThread:FromSave(jThreadObj, storyContext)
             if threadPointerResult.obj == nil then
                 error("When loading state, internal story location couldn't be found: " .. currentContainerPathStr .. ". Has the story changed since this save data was created?")
             elseif threadPointerResult.approximate then
-                print("When loading state, exact internal story location couldn't be found: '" .. currentContainerPathStr .. "', so it was approximated to '" .. Path:of(pointer.container):componentsString() .. "' to recover. Has the story changed since this save data was created?")
+                if pointer.container ~= nil then
+                    print("When loading state, exact internal story location couldn't be found: '" .. currentContainerPathStr .. "', so it was approximated to '" .. Path:of(pointer.container):componentsString() .. "' to recover. Has the story changed since this save data was created?")
+                else
+                    print("When loading state, exact internal story location couldn't be found: '" .. currentContainerPathStr .. "' and it may not be recoverable. Has the story changed since this save data was created?")
+                end
             end
         end
 

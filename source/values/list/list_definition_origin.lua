@@ -41,6 +41,7 @@ function ListDefinitionsOrigin:TryListGetDefinition(name, def)
 end
 
 function ListDefinitionsOrigin:FindSingleItemListWithName(name)
+    if name == nil or name == "" then return nil end
     local val = self._allUnambiguousListValueCache[name]
     return val
 end

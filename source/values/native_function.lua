@@ -62,7 +62,7 @@ function NativeFunctionCall:Call(parameters)
     local hasList = false
     for _, p in pairs(parameters) do
         if p:is(Void) then
-            error('Attempting to perform operation on a void value. Did you forget to "return" a value from a function you called here?')
+            error('Attempting to perform '..self.name..' on a void value. Did you forget to "return" a value from a function you called here?')
         end
         if p:is(ListValue) then
             hasList = true

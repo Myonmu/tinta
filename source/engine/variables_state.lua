@@ -17,21 +17,38 @@ function VariablesState:new(callStack, listDefsOrigin)
     self.patch = nil
 end
 
-function VariablesState:batchObservingVariableChanges(setValue)
-    if setValue == nil then
-        return self._batchObservingVariableChanges
+function VariablesState:StartVariableObservation()
+    self._batchObservingVariableChanges = true
+    self._changedVariablesForBatchObs = {}
+end
+
+function VariablesState:CompleteVariableObservation()
+    self._batchObservingVariableChanges = false
+
+    local changedVars = {}
+    if self._changedVariablesForBatchObs ~= nil then
+        for _, variableName in pairs(self._changedVariablesForBatchObs) do
+            local currentValue = self.globalVariables[variableName]
+            changedVars[variableName] = currentValue
+        end
     end
 
-    self._batchObservingVariableChanges = setValue
-    if setValue then
-        self._changedVariablesForBatchObs = {}
-    else
-        if (self._changedVariablesForBatchObs ~= nil) then
-            for _, variableName in ipairs(self._changedVariablesForBatchObs) do
-                local currentValue = self.globalVariables[variableName]
-                self.variableChangedEvent(variableName, currentValue)
+    if self.patch ~= nil then
+        for _, variableName in pairs(self.patch._changedVariables) do
+            local patchedVal = nil
+            if self.patch:TryGetGlobal(variableName, patchedVal) then
+                changedVars[variableName] = patchedVal
             end
         end
+    end
+
+    self._changedVariablesForBatchObs = nil
+    return changedVars
+end
+
+function VariablesState:NotifyObservers(changedVars)
+    for variableName, variable in ipairs(changedVars) do
+        self.variableChangedEvent(variableName, variable)
     end
 end
 
@@ -63,7 +80,7 @@ function VariablesState:SetGlobal(variableName, value)
     end
 
     if self.variableChangedEvent:hasAnySubscriber() and oldValue and value.value ~= oldValue.value then
-        if self:batchObservingVariableChanges() then
+        if self._batchObservingVariableChanges then
             if self.patch ~= nil then
                 self.patch:AddChangedVariable(variableName)
             elseif self._changedVariablesForBatchObs ~= nil then
@@ -239,7 +256,7 @@ function VariablesState:save()
         local shouldSave = true
 
         if self.dontSaveDefaultValues then
-            if self.defaultGlobalVariables[name] ~= nil then
+            if self.defaultGlobalVariables ~= nil and self.defaultGlobalVariables[name] ~= nil then
                 local defaultVal = self.defaultGlobalVariables[name]
                 if self:RuntimeObjectsEqual(val, defaultVal) then
                     shouldSave = false

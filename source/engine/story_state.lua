@@ -159,6 +159,7 @@ function StoryState:setCurrentPointer(pointer)
     self:callStack():currentElement().currentPointer = pointer:Copy()
 end
 
+---@return Pointer
 function StoryState:previousPointer()
     return self:callStack():currentThread().previousPointer
 end
@@ -167,10 +168,16 @@ function StoryState:setPreviousPointer(pointer)
     self:callStack():currentThread().previousPointer = pointer:Copy()
 end
 
+function StoryState:previousPathString()
+    local pointer = self:previousPointer()
+    if pointer:isNull() then return nil end
+    return tostring(pointer.path)
+end
+
 function StoryState:ResetOutput(objs) --add parameter when needed
     self._currentFlow.outputStream = {}
     if objs ~= nil then
-        for index, value in ipairs(t) do
+        for index, value in ipairs(objs) do
             table.insert(self._currentFlow.outputStream, value)
         end
     end

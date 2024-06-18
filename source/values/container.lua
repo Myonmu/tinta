@@ -62,8 +62,18 @@ function Container:ContentAtPath(path, partialStart, partialEnd)
             break
         end
 
+        -- Are we about to loop into another container?
+        -- Is the object a container as expected? It might
+        -- no longer be if the content has shuffled around, so what
+        -- was originally a container no longer is.
+        local nextContainer = inkutils.asOrNil(foundObj, Container)
+        if i < partialEnd - 1 and nextContainer == nil  then
+            result.approximate = true
+            break
+        end
+
         currentObj = foundObj
-        currentContainer = inkutils.asOrNil(foundObj, Container)
+        currentContainer = nextContainer
         
     end
     result.obj = currentObj

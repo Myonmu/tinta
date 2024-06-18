@@ -19,4 +19,18 @@ function Choice:setPathStringOnChoice(value)
     self.targetPath = Path:FromString(value)
 end
 
+function Choice:Clone()
+    local copy = {}
+    copy.text = self.text
+    copy.sourcePath = self.sourcePath
+    copy.index = self.index
+    copy.targetPath = self.targetPath
+    copy.originalThreadIndex = self.originalThreadIndex
+    copy.isInvisibleDefault = self.isInvisibleDefault
+    if self.threadAtGeneration ~= nil then
+        copy.threadAtGeneration = self.threadAtGeneration
+    end
+    return copy
+end
+
 return Choice

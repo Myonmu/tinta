@@ -236,6 +236,7 @@ function JObjectToChoice(jObj)
     choice.sourcePath = jObj["originalChoicePath"]
     choice.originalThreadIndex = jObj["originalThreadIndex"]
     choice:setPathStringOnChoice(jObj["targetPath"])
+    choice.tags = JArrayToTags(jObj, choice)
     return choice;
 end
 
@@ -327,6 +328,7 @@ function WriteChoice(choice)
     outputObject["originalChoicePath"] = choice.sourcePath
     outputObject["originalThreadIndex"] = choice.originalThreadIndex
     outputObject["targetPath"] = choice:pathStringOnChoice()
+    WriteChoiceTags(outputObject, choice)
     return outputObject
 end
 
@@ -486,6 +488,25 @@ function WriteRuntimeObject(obj)
     error("Failed to convert runtime object to token " .. tostring(obj))
 end
 
+function JArrayToTags(jObj, choice)
+    if jObj["tags"] == nil then
+        return nil
+    end
+
+    local tags = {}
+    for _, StringValue in pairs(jObj["tags"]) do
+        table.insert(tags, tostring(StringValue))
+    end
+    return tags
+end
+
+function WriteChoiceTags(obj, choice)
+    if choice.tags == nil or #choice.tags == 0 then return end
+    obj["tags"] = {}
+    for _, tag in pairs(choice.tags) do
+        table.insert(obj["tags"], tag)
+    end
+end
 
 return {
     ["JTokenToListDefinitions"] = JTokenToListDefinitions,
@@ -496,5 +517,7 @@ return {
     ["WriteRuntimeObject"] = WriteRuntimeObject,
     ["WriteIntDictionary"] = WriteIntDictionary,
     ["WriteDictionaryRuntimeObjs"] = WriteDictionaryRuntimeObjs,
-    ["WriteChoice"] = WriteChoice
+    ["WriteChoice"] = WriteChoice,
+    ["JArrayToTags"] = JArrayToTags,
+    ["WriteChoiceTags"] = WriteChoiceTags
  }

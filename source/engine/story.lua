@@ -116,7 +116,10 @@ function Story:ContinueInternal(millisecsLimitAsync)
         self.state:ResetOutput();
 
         if self._recursiveContinueCount == 1 then
-            self.state.variablesState:batchObservingVariableChanges(true)
+            self.state.variablesState:StartVariableObservation()
+            -- Async was previously active, but now we want to finish synchronously
+        elseif self._asyncContinueActive and !isAsyncTimeLimited  then
+            self._asyncContinueActive = false;
         end
     end
 
@@ -139,6 +142,7 @@ function Story:ContinueInternal(millisecsLimitAsync)
         
     until not self:canContinue()
 
+    local changedVariablesToObserve = nil
     if outputStreamEndsInNewline or not self:canContinue() then
 
         if self._stateSnapshotAtLastNewline ~= nil then
@@ -168,7 +172,7 @@ function Story:ContinueInternal(millisecsLimitAsync)
         self._sawLookaheadUnsafeFunctionAfterNewLine = false
 
         if self._recursiveContinueCount == 1 then
-            self.state.variablesState:batchObservingVariableChanges(false)
+            changedVariablesToObserve = self.state.variablesState:CompleteVariableObservation()
         end
 
         self._asyncContinueActive = false
@@ -177,6 +181,9 @@ function Story:ContinueInternal(millisecsLimitAsync)
     self._recursiveContinueCount = self._recursiveContinueCount - 1
 
     --TODO : Error handlers (Story.cs 523)
+    if changedVariablesToObserve ~= nil and #changedVariablesToObserve > 0 then
+        self.state.variablesState:NotifyObservers(changedVariablesToObserve)
+    end
 end
 
 function Story:IfAsyncWeCant(activityStr)
